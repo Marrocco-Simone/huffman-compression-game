@@ -1,6 +1,3 @@
-import React from "react";
-import styles from "../styles/Home.module.css";
+import Home from "./Home";
 
-export default function index() {
-  return <div>Hello World</div>;
-}
+export default Home;
