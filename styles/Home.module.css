@@ -1,6 +1,6 @@
 .main {
   font-size: 2em;
-  width: 80%;
+  width: 90%;
   margin-left: auto;
   margin-right: auto;
   margin-top: 2.5%;
@@ -12,5 +12,21 @@
 }
 
 .random_world input, .random_world button {
+  font-size: 1em;
+}
+
+.frequencies {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5%;
+}
+
+.letter_description {
+  display: flex;
+  justify-content: space-between;
+}
+
+.letter_description input {
+  width: 50%;
   font-size: 1em;
 }
