@@ -9,12 +9,14 @@ import { getHuffmanTreeFromTable } from "../functions/getHuffmanTreeFromTable";
 import { decryptWord } from "../functions/decryptWord";
 import { getBestHuffmanEncryptedWord } from "../functions/getBestHuffmanEncryptedWord";
 
+// TODO button to automatically create the user encrypted word from the user table
+// Todo change all "encrypt" to "compress"
 export default function Home() {
   const [random_word, setRandomWord] = useState("");
   // * otherwise server and client render different words and nextjs bothers
   useEffect(() => setRandomWord(getRandomWord()), [setRandomWord]);
 
-  const [encrypted_word, setEncryptedWord] = useState("");
+  const [msg_for_user, setMsgForUser] = useState("");
   const [user_encryption_word, setUserEncryptionWord] = useState("");
   const [user_encryption_table, setUserEncryptionTable] =
     useState<EncryptionTable>({});
@@ -52,8 +54,8 @@ export default function Home() {
     let user_huffman_tree;
     try {
       user_huffman_tree = getHuffmanTreeFromTable(user_encryption_table);
-    } catch (e) {
-      alert(e);
+    } catch (e: any) {
+      setMsgForUser(e.message);
       return;
     }
     const user_decrypted_word = decryptWord(
@@ -61,18 +63,17 @@ export default function Home() {
       user_huffman_tree
     );
 
-    const best_encrypted_word = getBestHuffmanEncryptedWord(random_word);
-
-    console.log(
-      user_decrypted_word,
-      random_word,
-      user_decrypted_word === random_word
-    );
-    console.log(
-      user_encryption_word.length,
-      best_encrypted_word.length,
-      user_encryption_word.length === best_encrypted_word.length
-    );
+    let msg = "";
+    if (user_decrypted_word == random_word) {
+      msg = "I understood the word. You encrypted correctly!";
+      const best_encrypted_word = getBestHuffmanEncryptedWord(random_word);
+      if (user_encryption_word.length === best_encrypted_word.length) {
+        msg += "You are a genious! I wouldn't know how to compress better!";
+      } else
+        msg += `You compressed the message down to ${user_encryption_word.length}, but I did it in ${best_encrypted_word.length}. Can you do the same?`;
+    } else
+      msg = `I wasn't able to decrypt the word correctly. I understood: ${user_decrypted_word}`;
+    setMsgForUser(msg);
   }
 
   return (
@@ -92,9 +93,7 @@ export default function Home() {
           checkEncryption();
         }}
       >
-        <div className={styles.frequencies}>
-          {getFrequenciesElements()}
-        </div>
+        <div className={styles.frequencies}>{getFrequenciesElements()}</div>
         Put here your encrypted word:
         <input
           required
@@ -106,7 +105,7 @@ export default function Home() {
         />
         <button type="submit">Check</button>
       </form>
-      <p>{encrypted_word}</p>
+      <p>{msg_for_user}</p>
       <TreeVisualizer word={random_word} />
     </main>
   );
