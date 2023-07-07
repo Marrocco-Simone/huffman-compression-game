@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { GraphNode, GraphEdge, GraphCanvasProps } from "reagraph";
 import dynamic from "next/dynamic";
-import { FrequencyTreeNode, getHuffmanTree } from "../functions/getHuffmanTree";
+import { FrequencyTreeNode, getBestHuffmanTreeFromWord } from "../functions/getBestHuffmanTreeFromWord";
 const GraphCanvas = dynamic<GraphCanvasProps>(
   () => import("reagraph").then((x) => x.GraphCanvas),
   {
@@ -9,14 +9,14 @@ const GraphCanvas = dynamic<GraphCanvasProps>(
   }
 );
 
-export default function TreeVisualizer(props: { random_world: string }) {
-  const { random_world } = props;
+export default function TreeVisualizer(props: { word: string }) {
+  const { word } = props;
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<GraphEdge[]>([]);
 
   // ! THIS TREE DOES NOT SHOW CORRECTLY LEFT/RIGHT (EVEN IF THEY ARE ANALYZED IN CORRECT ORDER)
   function loadHuffmanTree() {
-    const huffman_tree = getHuffmanTree(random_world);
+    const huffman_tree = getBestHuffmanTreeFromWord(word);
     if (!huffman_tree) return;
 
     const queue: FrequencyTreeNode[] = [huffman_tree];

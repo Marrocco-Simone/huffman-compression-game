@@ -1,7 +1,8 @@
 import { getFrequencies } from "./getFrequencies";
-import { letters } from "./getRandomWorld";
+import { letters } from "./getRandomWord";
 
 // TODO enforce that you can either have letter or left/right
+// TODO frequency may not be strictly necessary
 export type FrequencyTreeNode = {
   letter?: string;
   frequency: number;
@@ -12,12 +13,12 @@ export type FrequencyTreeNode = {
   parent?: number;
 };
 
-export function getHuffmanTree(random_world: string) {
+export function getBestHuffmanTreeFromWord(word: string) {
   const sortByFrequency = (a: FrequencyTreeNode, b: FrequencyTreeNode) => {
     return a.frequency - b.frequency;
   };
 
-  const frequencies = getFrequencies(random_world);
+  const frequencies = getFrequencies(word);
   const queue: FrequencyTreeNode[] = [];
   let id = 42;
   for (const letter of letters) {

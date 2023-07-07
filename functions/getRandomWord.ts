@@ -5,7 +5,7 @@ export function getRandomNumber(max: number, min = 0) {
   return Math.floor(Math.random() * max) + min;
 }
 
-export function getRandomWorld() {
+export function getRandomWord() {
   let s = "";
   for (let i = 0; i < max_lenght; i++) {
     s += letters[getRandomNumber(letters.length)];

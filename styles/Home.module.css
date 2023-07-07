@@ -6,12 +6,12 @@
   margin-top: 2.5%;
 }
 
-.random_world {
+.random_word {
   display: flex;
   flex-direction: column;
 }
 
-.random_world input, .random_world button {
+.random_word input, .random_word button {
   font-size: 1em;
 }
 
