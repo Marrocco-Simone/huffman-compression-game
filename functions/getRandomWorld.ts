@@ -1,5 +1,5 @@
-export const letters = ["a", "b", "c", "d", "e"] as const;
-export const max_lenght = 50;
+export const letters = ["a", "b", "c"] as const;
+export const max_lenght = 10;
 
 export function getRandomNumber(max: number, min = 0) {
   return Math.floor(Math.random() * max) + min;

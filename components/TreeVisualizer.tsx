@@ -16,10 +16,10 @@ export default function TreeVisualizer(props: { random_world: string }) {
 
   // ! THIS TREE DOES NOT SHOW CORRECTLY LEFT/RIGHT (EVEN IF THEY ARE ANALYZED IN CORRECT ORDER)
   function loadHuffmanTree() {
-    const huffmanTree = getHuffmanTree(random_world);
-    if (!huffmanTree) return;
+    const huffman_tree = getHuffmanTree(random_world);
+    if (!huffman_tree) return;
 
-    const queue: FrequencyTreeNode[] = [huffmanTree];
+    const queue: FrequencyTreeNode[] = [huffman_tree];
     const new_nodes: GraphNode[] = [];
     const new_edges: GraphEdge[] = [];
 
