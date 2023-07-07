@@ -30,6 +30,9 @@ export default function Home() {
 
   type EncryptionTable = { [letter: string]: string };
 
+  const left_branch_symbol = "0"
+  const right_branch_symbol = "1"
+
   function recHuffmanAnalysis(
     node: FrequencyTreeNode,
     encryption_table: EncryptionTable,
@@ -48,12 +51,12 @@ export default function Home() {
       const left_encryption_table = recHuffmanAnalysis(
         node.left,
         encryption_table,
-        current_decode + "0"
+        current_decode + left_branch_symbol
       );
       const right_encryption_table = recHuffmanAnalysis(
         node.right,
         encryption_table,
-        current_decode + "1"
+        current_decode + right_branch_symbol
       );
       return { ...left_encryption_table, ...right_encryption_table };
     }
@@ -84,8 +87,8 @@ export default function Home() {
     return encrypted_word;
   }
 
-  // TODO doesnt work yet
   function decryptWord(encrypted_word: string): string {
+    // TODO check before for ambiguity and other symbols in encrypted_word
     const huffmanTree = getHuffmanTree(random_world);
     if (!huffmanTree) return "";
 
@@ -94,9 +97,8 @@ export default function Home() {
 
     let current_node = huffmanTree;
     for (const binary of encrypted_word_splitted) {
-      if (binary === "1") current_node = current_node.left!;
-      else if (binary === "0") current_node = current_node.right!;
-      // TODO check before for ambiguity and other symbols in encrypted_word
+      if (binary === left_branch_symbol) current_node = current_node.left!;
+      else if (binary === right_branch_symbol) current_node = current_node.right!;
 
       if (current_node.letter) {
         dectypted_word += current_node.letter;
@@ -129,7 +131,7 @@ export default function Home() {
           Check
         </button>
       </div>
-      {encrypted_word}
+      <p>{encrypted_word}</p>
       <TreeVisualizer random_world={random_world} />
     </main>
   );
