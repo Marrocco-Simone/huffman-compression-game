@@ -52,7 +52,7 @@ export default function TreeVisualizer(props: { random_world: string }) {
   return (
     <>
       <button onClick={() => loadHuffmanTree()}>Load Tree</button>
-      {nodes.length && edges.length && (
+      {nodes.length > 0 && edges.length > 0 && (
         <div
           style={{
             border: "solid 1px black",
