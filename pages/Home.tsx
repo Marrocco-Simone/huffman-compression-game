@@ -5,12 +5,24 @@ import { getRandomWorld, letters } from "../functions/getRandomWorld";
 import { FrequencyTreeNode, getHuffmanTree } from "../functions/getHuffmanTree";
 import { getFrequencies } from "../functions/getFrequencies";
 
+const left_branch_symbol = "1";
+const right_branch_symbol = "0";
+function isStringBinaryCode(s: string) {
+  // const regex = /^[01]*$/;
+  const regex = new RegExp(`^[${left_branch_symbol}${right_branch_symbol}]*$`);
+  return regex.test(s);
+}
+
 export default function Home() {
   const [random_world, setRandomWorld] = useState("");
   // * otherwise server and client render different words and nextjs bothers
   useEffect(() => setRandomWorld(getRandomWorld()), [setRandomWorld]);
 
+  type EncryptionTable = { [letter: string]: string };
   const [encrypted_word, setEncryptedWord] = useState("");
+  const [user_encryption_word, setUserEncryptionWord] = useState("");
+  const [user_encryption_table, setUserEncryptionTable] =
+    useState<EncryptionTable>({});
 
   function getFrequenciesElements() {
     const frequencies = getFrequencies(random_world);
@@ -18,20 +30,26 @@ export default function Home() {
 
     for (const letter of letters) {
       elements.push(
-        <p key={letter} className={styles.letter_description}>
+        <label key={letter} className={styles.letter_description}>
           {letter}:{frequencies[letter]}
-          <input type="number" />
-        </p>
+          <input
+            required
+            value={user_encryption_table[letter] ?? ""}
+            onChange={(e) => {
+              const new_encoding = e.target.value;
+              if (!isStringBinaryCode(new_encoding)) return;
+
+              setUserEncryptionTable((old_table) => {
+                return { ...old_table, [letter]: new_encoding };
+              });
+            }}
+          />
+        </label>
       );
     }
 
     return elements;
   }
-
-  type EncryptionTable = { [letter: string]: string };
-
-  const left_branch_symbol = "0"
-  const right_branch_symbol = "1"
 
   function recHuffmanAnalysis(
     node: FrequencyTreeNode,
@@ -98,7 +116,8 @@ export default function Home() {
     let current_node = huffmanTree;
     for (const binary of encrypted_word_splitted) {
       if (binary === left_branch_symbol) current_node = current_node.left!;
-      else if (binary === right_branch_symbol) current_node = current_node.right!;
+      else if (binary === right_branch_symbol)
+        current_node = current_node.right!;
 
       if (current_node.letter) {
         dectypted_word += current_node.letter;
@@ -118,19 +137,27 @@ export default function Home() {
           Get new word
         </button>
       </div>
-      <div className={styles.frequencies}>{getFrequenciesElements()}</div>
-      <div className={styles.random_world}>
+      <form
+        className={styles.random_world}
+        onSubmit={(e) => {
+          e.preventDefault();
+          // setEncryptedWord(decryptWord(getHuffmanEncryptedWord()));
+          // alert(random_world === decryptWord(getHuffmanEncryptedWord()));
+        }}
+      >
+        <div className={styles.frequencies}>{getFrequenciesElements()}</div>
         Put here your encrypted word:
-        <input typeof="number" />
-        <button
-          onClick={() => {
-            setEncryptedWord(decryptWord(getHuffmanEncryptedWord()));
-            alert(random_world === decryptWord(getHuffmanEncryptedWord()));
+        <input
+          required
+          value={user_encryption_word}
+          onChange={(e) => {
+            const new_encoding = e.target.value;
+            if (!isStringBinaryCode(new_encoding)) return;
+            setUserEncryptionWord(new_encoding);
           }}
-        >
-          Check
-        </button>
-      </div>
+        />
+        <button type="submit">Check</button>
+      </form>
       <p>{encrypted_word}</p>
       <TreeVisualizer random_world={random_world} />
     </main>
