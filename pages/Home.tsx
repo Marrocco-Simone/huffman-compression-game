@@ -12,7 +12,7 @@ export default function Home() {
 
   const [computed_encryption, setComputedEncryption] = useState("");
 
-  function getFrequenciesElement() {
+  function getFrequenciesElements() {
     const frequencies = getFrequencies(random_world);
     const elements: React.ReactNode[] = [];
 
@@ -82,7 +82,7 @@ export default function Home() {
           get new word
         </button>
       </div>
-      <div className={styles.frequencies}>{getFrequenciesElement()}</div>
+      <div className={styles.frequencies}>{getFrequenciesElements()}</div>
       <div className={styles.random_world}>
         Put here your encrypted word:
         <input typeof="number" />
