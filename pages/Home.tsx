@@ -201,8 +201,19 @@ export default function Home() {
   function checkEncryption() {
     if (!isStringBinaryCode(user_encryption_word)) return;
 
-    const user_huffman_tree = getHuffmanTreeFromTable(user_encryption_table);
+    let user_huffman_tree;
+    try {
+      user_huffman_tree = getHuffmanTreeFromTable(user_encryption_table);
+    } catch (e) {
+      alert(e);
+      return;
+    }
+    const user_decrypted_word = decryptWord(user_encryption_word, user_huffman_tree);
     
+    const best_encrypted_word = getHuffmanEncryptedWord(random_world);
+
+    console.log(user_decrypted_word, random_world, user_decrypted_word === random_world)
+    console.log(user_encryption_word.length, best_encrypted_word.length, user_encryption_word.length === best_encrypted_word.length)
   }
 
   return (
