@@ -10,7 +10,7 @@ export default function Home() {
   // * otherwise server and client render different words and nextjs bothers
   useEffect(() => setRandomWorld(getRandomWorld()), [setRandomWorld]);
 
-  const [computed_encryption, setComputedEncryption] = useState("");
+  const [encrypted_word, setEncryptedWord] = useState("");
 
   function getFrequenciesElements() {
     const frequencies = getFrequencies(random_world);
@@ -28,49 +28,83 @@ export default function Home() {
     return elements;
   }
 
-  function getHuffmanEncryption(): string {
-    type EncryptionTable = { [letter: string]: string };
-    function recHuffmanAnalysis(
-      node: FrequencyTreeNode,
-      encryption_table: EncryptionTable,
-      current_decode: string
-    ): EncryptionTable {
-      if (!node) return encryption_table;
+  type EncryptionTable = { [letter: string]: string };
 
-      if (node.letter) {
-        return {
-          ...encryption_table,
-          [node.letter]: current_decode,
-        };
-      }
+  function recHuffmanAnalysis(
+    node: FrequencyTreeNode,
+    encryption_table: EncryptionTable,
+    current_decode: string
+  ): EncryptionTable {
+    if (!node) return encryption_table;
 
-      if (node.left && node.right) {
-        const left_encryption_table = recHuffmanAnalysis(
-          node.left,
-          encryption_table,
-          current_decode + "0"
-        );
-        const right_encryption_table = recHuffmanAnalysis(
-          node.right,
-          encryption_table,
-          current_decode + "1"
-        );
-        return { ...left_encryption_table, ...right_encryption_table };
-      }
-
-      console.error({ node, encryption_table, current_decode });
-      throw new Error("How did you get here?");
+    if (node.letter) {
+      return {
+        ...encryption_table,
+        [node.letter]: current_decode,
+      };
     }
 
+    if (node.left && node.right) {
+      const left_encryption_table = recHuffmanAnalysis(
+        node.left,
+        encryption_table,
+        current_decode + "0"
+      );
+      const right_encryption_table = recHuffmanAnalysis(
+        node.right,
+        encryption_table,
+        current_decode + "1"
+      );
+      return { ...left_encryption_table, ...right_encryption_table };
+    }
+
+    console.error({ node, encryption_table, current_decode });
+    throw new Error("How did you get here?");
+  }
+
+  function getHuffmanEncryptionTable(): EncryptionTable {
     const huffmanTree = getHuffmanTree(random_world);
-    if (!huffmanTree) return "";
+    if (!huffmanTree) return {};
     const encryption_table: EncryptionTable = recHuffmanAnalysis(
       huffmanTree,
       {},
       ""
     );
-    console.log(encryption_table);
-    return "";
+    return encryption_table;
+  }
+
+  function getHuffmanEncryptedWord() {
+    const encryption_table = getHuffmanEncryptionTable();
+    const random_world_splitted = random_world.split("");
+    const encrypted_word_splitted: string[] = [];
+    for (const letter of random_world_splitted) {
+      encrypted_word_splitted.push(encryption_table[letter]);
+    }
+    const encrypted_word = encrypted_word_splitted.join("");
+    return encrypted_word;
+  }
+
+  // TODO doesnt work yet
+  function decryptWord(encrypted_word: string): string {
+    const huffmanTree = getHuffmanTree(random_world);
+    if (!huffmanTree) return "";
+
+    const encrypted_word_splitted = encrypted_word.split("");
+    let dectypted_word = "";
+
+    let current_node = huffmanTree;
+    for (const binary of encrypted_word_splitted) {
+      if (binary === "1") current_node = current_node.left!;
+      else if (binary === "0") current_node = current_node.right!;
+      // TODO check before for ambiguity and other symbols in encrypted_word
+
+      if (current_node.letter) {
+        dectypted_word += current_node.letter;
+        current_node = huffmanTree;
+      }
+    }
+
+    return dectypted_word;
   }
 
   return (
@@ -86,9 +120,16 @@ export default function Home() {
       <div className={styles.random_world}>
         Put here your encrypted word:
         <input typeof="number" />
-        <button onClick={() => getHuffmanEncryption()}>Check</button>
+        <button
+          onClick={() => {
+            setEncryptedWord(decryptWord(getHuffmanEncryptedWord()));
+            alert(random_world === decryptWord(getHuffmanEncryptedWord()));
+          }}
+        >
+          Check
+        </button>
       </div>
-      {computed_encryption}
+      {encrypted_word}
       <TreeVisualizer random_world={random_world} />
     </main>
   );
