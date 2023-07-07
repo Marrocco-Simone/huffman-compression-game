@@ -10,7 +10,7 @@ const GraphCanvas = dynamic<GraphCanvasProps>(
 );
 
 const letters = ["a", "b", "c", "d", "e"] as const;
-const max_lenght = 50;
+const max_lenght = 200;
 
 function getRandomNumber(max: number, min = 0) {
   return Math.floor(Math.random() * max) + min;
@@ -43,19 +43,24 @@ function getFrequencies(random_world: string) {
   return frequencies;
 }
 
+// TODO enforce that you can either have letter or left/right
+type FrequencyTreeNode = {
+  letter?: string;
+  frequency: number;
+  left?: FrequencyTreeNode;
+  right?: FrequencyTreeNode;
+
+  id: number;
+  parent?: number;
+};
 function getHuffmanTree(random_world: string) {
-  type FrequencyTreeNode = {
-    letter?: string;
-    frequency: number;
-    left?: FrequencyTreeNode;
-    right?: FrequencyTreeNode;
-  };
   const sortByFrequency = (a: FrequencyTreeNode, b: FrequencyTreeNode) => {
     return a.frequency - b.frequency;
   };
 
   const frequencies = getFrequencies(random_world);
   const queue: FrequencyTreeNode[] = [];
+  let id = 42;
   for (const letter of letters) {
     if (frequencies[letter] == null)
       throw new Error("In random word there is a never seen letter");
@@ -63,7 +68,10 @@ function getHuffmanTree(random_world: string) {
     queue.push({
       letter,
       frequency: frequencies[letter],
+      id,
     });
+
+    id++;
   }
   queue.sort(sortByFrequency);
 
@@ -72,11 +80,15 @@ function getHuffmanTree(random_world: string) {
     const z2 = queue.shift();
     if (!z1 || !z2) break;
 
+    z1.parent = z2.parent = id;
     queue.push({
       frequency: z1.frequency + z2.frequency,
       left: z1,
       right: z2,
+      id,
     });
+
+    id++;
   }
 
   return queue.shift();
@@ -89,27 +101,7 @@ export default function Home() {
 
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<GraphEdge[]>([]);
-  // load only on client, should be deleted later on
-  useEffect(() => {
-    setEdges([
-      {
-        id: "1->2",
-        source: "n-1",
-        target: "n-2",
-        label: "Edge 1-2",
-      },
-    ]);
-    setNodes([
-      {
-        id: "n-1",
-        label: "1",
-      },
-      {
-        id: "n-2",
-        label: "2",
-      },
-    ]);
-  }, []);
+  const [computed_encryption, setComputedEncryption] = useState("");
 
   function getFrequenciesElement() {
     const frequencies = getFrequencies(random_world);
@@ -127,8 +119,84 @@ export default function Home() {
     return elements;
   }
 
+  // ! THIS TREE DOES NOT SHOW CORRECTLY LEFT/RIGHT (EVEN IF THEY ARE ANALYZED IN CORRECT ORDER)
   function loadHuffmanTree() {
     const huffmanTree = getHuffmanTree(random_world);
+    if (!huffmanTree) return;
+
+    const queue: FrequencyTreeNode[] = [huffmanTree];
+    const new_nodes: GraphNode[] = [];
+    const new_edges: GraphEdge[] = [];
+
+    while (queue.length > 0) {
+      const new_node = queue.shift();
+      if (!new_node) return;
+
+      new_nodes.push({
+        id: `${new_node.id}`,
+        label: new_node.letter ?? "",
+      });
+
+      if (new_node.parent) {
+        new_edges.push({
+          id: `${new_node.parent}->${new_node.id}`,
+          source: `${new_node.parent}`,
+          target: `${new_node.id}`,
+          label: `${new_node.parent}->${new_node.id}`,
+        });
+      }
+
+      if (new_node.left) queue.push(new_node.left);
+      if (new_node.right) queue.push(new_node.right);
+    }
+
+    setNodes(new_nodes);
+    setEdges(new_edges);
+  }
+
+  function getHuffmanEncryption(): string {
+    type EncryptionTable = { [letter: string]: string };
+    function recHuffmanAnalysis(
+      node: FrequencyTreeNode,
+      encryption_table: EncryptionTable,
+      current_decode: string
+    ): EncryptionTable {
+      if (!node) return encryption_table;
+
+      if (node.letter) {
+        return {
+          ...encryption_table,
+          [node.letter]: current_decode,
+        };
+      }
+
+      if (node.left && node.right) {
+        const left_encryption_table = recHuffmanAnalysis(
+          node.left,
+          encryption_table,
+          current_decode + "0"
+        );
+        const right_encryption_table = recHuffmanAnalysis(
+          node.right,
+          encryption_table,
+          current_decode + "1"
+        );
+        return { ...left_encryption_table, ...right_encryption_table };
+      }
+
+      console.error({ node, encryption_table, current_decode });
+      throw new Error("How did you get here?");
+    }
+
+    const huffmanTree = getHuffmanTree(random_world);
+    if (!huffmanTree) return "";
+    const encryption_table: EncryptionTable = recHuffmanAnalysis(
+      huffmanTree,
+      {},
+      ""
+    );
+    console.log(encryption_table);
+    return "";
   }
 
   return (
@@ -142,27 +210,28 @@ export default function Home() {
       </div>
       <div className={styles.frequencies}>{getFrequenciesElement()}</div>
       <div className={styles.random_world}>
-        Put here your encripted word:
+        Put here your encrypted word:
         <input typeof="number" />
-        <button onClick={() => console.log(getHuffmanTree(random_world))}>
+        <button
+          onClick={() => {
+            loadHuffmanTree();
+            getHuffmanEncryption();
+          }}
+        >
           Check
         </button>
       </div>
+      {computed_encryption}
       {nodes.length > 0 && edges.length > 0 && (
         <div
           style={{
             border: "solid 1px black",
             height: "100vh",
-            width: "30%",
+            width: "100%",
             position: "relative",
           }}
         >
-          <GraphCanvas
-            nodes={nodes}
-            edges={edges}
-            layoutType="treeTd2d"
-            animated={false}
-          />
+          <GraphCanvas nodes={nodes} edges={edges} layoutType="treeTd2d" />
         </div>
       )}
     </main>
