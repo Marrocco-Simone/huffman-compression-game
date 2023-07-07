@@ -79,7 +79,7 @@ export default function Home() {
         Random World:
         <input readOnly value={random_world} />
         <button onClick={() => setRandomWorld(getRandomWorld())}>
-          get new word
+          Get new word
         </button>
       </div>
       <div className={styles.frequencies}>{getFrequenciesElements()}</div>
