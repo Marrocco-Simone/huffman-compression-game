@@ -94,7 +94,7 @@ export default function Home() {
         }}
       >
         <div className={styles.frequencies}>{getFrequenciesElements()}</div>
-        Put here your encrypted word:
+        Put here your compressed word:
         <input
           required
           value={user_encryption_word}
